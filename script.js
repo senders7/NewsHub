@@ -61,89 +61,182 @@ const trendingItemsPerPage = 8
 
 let searchDebounceTimer = null
 
-setInterval(
-  () => {
-    if (!isSearchMode && !currentCategory) {
-      loadNews()
-    }
-  },
-  15 * 60 * 1000,
-)
+document.addEventListener("DOMContentLoaded", () => {
+  const navMenuBtns = document.querySelectorAll(".nav-menu-btn")
+  const navSearch = document.getElementById("nav-search")
+  const topicTags = document.querySelectorAll(".topic-tag")
+  const burgerMenu = document.getElementById("burger-menu")
+  const navMenu = document.getElementById("nav-menu")
+  const searchContainer = document.querySelector(".search-container-nav")
+  const newsMain = document.querySelector(".news-main")
+  const scrollIndicator = document.querySelector(".scroll-indicator")
+  const navPrev = document.querySelector(".nav-prev")
+  const navNext = document.querySelector(".nav-next")
+  const searchIcon = document.querySelector(".search-container-nav i")
 
-setInterval(
-  () => {
-    if (isWeatherWidgetOnPage()) {
-      loadWeather()
-    }
-  },
-  15 * 60 * 1000,
-)
+  // Navigation menu buttons
+  if (navMenuBtns) {
+    navMenuBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        navMenuBtns.forEach((b) => b.classList.remove("active"))
+        btn.classList.add("active")
+        currentSection = btn.dataset.section
+        isSearchMode = false
 
-setInterval(
-  () => {
-    if (isExchangeWidgetOnPage()) {
-      loadExchangeRates()
-    }
-  },
-  15 * 60 * 1000,
-)
+        if (currentSection === "all") {
+          selectedSources = ["mixed"]
+        } else if (["newsdata", "gnews", "newsapi"].includes(currentSection)) {
+          selectedSources = [currentSection]
+        }
+
+        updateSectionTitle(currentSection)
+
+        if (currentCategory) {
+          loadNewsByCategory(currentCategory)
+        } else {
+          loadNews()
+        }
+      })
+    })
+  }
+
+  // Search input
+  if (navSearch) {
+    navSearch.addEventListener("input", (e) => {
+      clearTimeout(searchDebounceTimer)
+      const searchText = e.target.value.trim()
+
+      if (searchText.length >= 2) {
+        searchDebounceTimer = setTimeout(() => {
+          performSearch(searchText)
+        }, 800)
+      } else if (searchText.length === 0) {
+        isSearchMode = false
+        currentSection = "all"
+        navMenuBtns.forEach((b) => b.classList.remove("active"))
+        navMenuBtns[0].classList.add("active")
+        loadNews()
+      }
+    })
+
+    navSearch.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        clearTimeout(searchDebounceTimer)
+        const searchText = navSearch.value.trim()
+        if (searchText.length >= 2) {
+          performSearch(searchText)
+        }
+      }
+    })
+  }
+
+  // Topic tags
+  if (topicTags) {
+    topicTags.forEach((tag) => {
+      tag.addEventListener("click", function () {
+        const category = this.dataset.category
+
+        topicTags.forEach((t) => t.classList.remove("active"))
+        this.classList.add("active")
+
+        currentCategory = category
+        isSearchMode = false
+
+        loadNewsByCategory(category)
+      })
+    })
+  }
+
+  // Scroll indicator
+  if (newsMain && scrollIndicator) {
+    newsMain.addEventListener("scroll", () => {
+      if (newsMain.scrollTop > 100) {
+        scrollIndicator.classList.add("hidden")
+      } else {
+        scrollIndicator.classList.remove("hidden")
+      }
+    })
+  }
+
+  // Trending navigation
+  if (navPrev) {
+    navPrev.addEventListener("click", () => {
+      if (currentTrendingPage > 0) {
+        currentTrendingPage--
+        displayTrendingNews()
+        scrollToTrendingSection()
+      }
+    })
+  }
+
+  if (navNext) {
+    navNext.addEventListener("click", () => {
+      const startIndex = 20 + (currentTrendingPage + 1) * trendingItemsPerPage
+      if (startIndex < allNewsData.length) {
+        currentTrendingPage++
+        displayTrendingNews()
+        scrollToTrendingSection()
+      }
+    })
+  }
+
+  // Burger menu
+  if (burgerMenu && navMenu) {
+    burgerMenu.addEventListener("click", () => {
+      burgerMenu.classList.toggle("open")
+      navMenu.classList.toggle("open")
+
+      if (searchContainer && searchContainer.classList.contains("show")) {
+        searchContainer.classList.remove("show")
+      }
+    })
+
+    const menuButtons = navMenu.querySelectorAll(".nav-menu-btn")
+    menuButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        burgerMenu.classList.remove("open")
+        navMenu.classList.remove("open")
+      })
+    })
+
+    document.addEventListener("click", (e) => {
+      if (!burgerMenu.contains(e.target) && !navMenu.contains(e.target)) {
+        burgerMenu.classList.remove("open")
+        navMenu.classList.remove("open")
+      }
+    })
+  }
+
+  // Mobile search icon
+  if (searchIcon && window.innerWidth <= 768) {
+    searchIcon.addEventListener("click", () => {
+      if (searchContainer) {
+        searchContainer.classList.toggle("show")
+
+        if (navMenu && navMenu.classList.contains("open")) {
+          burgerMenu.classList.remove("open")
+          navMenu.classList.remove("open")
+        }
+      }
+    })
+  }
+
+  // Initial load
+  updateSectionTitle("all")
+  loadNews()
+
+  if (isWeatherWidgetOnPage()) {
+    loadWeather()
+  }
+
+  if (isExchangeWidgetOnPage()) {
+    loadExchangeRates()
+  }
+})
 
 setInterval(() => {
   rotateFeaturedNews()
 }, 8000)
-
-const navMenuBtns = document.querySelectorAll(".nav-menu-btn")
-const navSearch = document.getElementById("nav-search")
-
-navMenuBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    navMenuBtns.forEach((b) => b.classList.remove("active"))
-    btn.classList.add("active")
-    currentSection = btn.dataset.section
-    isSearchMode = false
-
-    if (currentSection === "all") {
-      selectedSources = ["mixed"]
-    } else if (["newsdata", "gnews", "newsapi"].includes(currentSection)) {
-      selectedSources = [currentSection]
-    }
-
-    updateSectionTitle(currentSection)
-
-    if (currentCategory) {
-      loadNewsByCategory(currentCategory)
-    } else {
-      loadNews()
-    }
-  })
-})
-
-navSearch.addEventListener("input", (e) => {
-  clearTimeout(searchDebounceTimer)
-  const searchText = e.target.value.trim()
-
-  if (searchText.length >= 2) {
-    searchDebounceTimer = setTimeout(() => {
-      performSearch(searchText)
-    }, 800)
-  } else if (searchText.length === 0) {
-    isSearchMode = false
-    currentSection = "all"
-    navMenuBtns.forEach((b) => b.classList.remove("active"))
-    navMenuBtns[0].classList.add("active")
-    loadNews()
-  }
-})
-
-navSearch.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    clearTimeout(searchDebounceTimer)
-    const searchText = navSearch.value.trim()
-    if (searchText.length >= 2) {
-      performSearch(searchText)
-    }
-  }
-})
 
 async function performSearch(searchText) {
   if (searchText.length >= 2) {
@@ -271,105 +364,6 @@ async function performSearch(searchText) {
     }
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const topicTags = document.querySelectorAll(".topic-tag")
-
-  topicTags.forEach((tag) => {
-    tag.addEventListener("click", function () {
-      const category = this.dataset.category
-
-      topicTags.forEach((t) => t.classList.remove("active"))
-      this.classList.add("active")
-
-      currentCategory = category
-      isSearchMode = false
-
-      loadNewsByCategory(category)
-    })
-  })
-
-  const burgerMenu = document.getElementById("burger-menu")
-  const navMenu = document.getElementById("nav-menu")
-  const searchContainer = document.querySelector(".search-container-nav")
-
-  const newsMain = document.querySelector(".news-main")
-  const scrollIndicator = document.querySelector(".scroll-indicator")
-
-  if (newsMain && scrollIndicator) {
-    newsMain.addEventListener("scroll", () => {
-      if (newsMain.scrollTop > 100) {
-        scrollIndicator.classList.add("hidden")
-      } else {
-        scrollIndicator.classList.remove("hidden")
-      }
-    })
-  }
-
-  const navPrev = document.querySelector(".nav-prev")
-  const navNext = document.querySelector(".nav-next")
-
-  if (navPrev) {
-    navPrev.addEventListener("click", () => {
-      if (currentTrendingPage > 0) {
-        currentTrendingPage--
-        displayTrendingNews()
-        scrollToTrendingSection()
-      }
-    })
-  }
-
-  if (navNext) {
-    navNext.addEventListener("click", () => {
-      const startIndex = 20 + (currentTrendingPage + 1) * trendingItemsPerPage
-      if (startIndex < allNewsData.length) {
-        currentTrendingPage++
-        displayTrendingNews()
-        scrollToTrendingSection()
-      }
-    })
-  }
-
-  if (burgerMenu && navMenu) {
-    burgerMenu.addEventListener("click", () => {
-      burgerMenu.classList.toggle("open")
-      navMenu.classList.toggle("open")
-
-      if (searchContainer && searchContainer.classList.contains("show")) {
-        searchContainer.classList.remove("show")
-      }
-    })
-
-    const menuButtons = navMenu.querySelectorAll(".nav-menu-btn")
-    menuButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        burgerMenu.classList.remove("open")
-        navMenu.classList.remove("open")
-      })
-    })
-
-    document.addEventListener("click", (e) => {
-      if (!burgerMenu.contains(e.target) && !navMenu.contains(e.target)) {
-        burgerMenu.classList.remove("open")
-        navMenu.classList.remove("open")
-      }
-    })
-  }
-
-  const searchIcon = document.querySelector(".search-container-nav i")
-  if (searchIcon && window.innerWidth <= 768) {
-    searchIcon.addEventListener("click", () => {
-      if (searchContainer) {
-        searchContainer.classList.toggle("show")
-
-        if (navMenu && navMenu.classList.contains("open")) {
-          burgerMenu.classList.remove("open")
-          navMenu.classList.remove("open")
-        }
-      }
-    })
-  }
-})
 
 async function loadNewsByCategory(category) {
   try {
@@ -696,7 +690,7 @@ function displayTrendingNews() {
         ${createTrendingImage(news)}
         <div class="trending-content">
           <div class="trending-title">${cleanText(news.title || "Без названия")}</div>
-          <div class="trending-description" style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.5rem 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+          <div class="trending-description">
             ${cleanText(news.description || news.content || news.summary || "Описание недоступно")}
           </div>
           <div class="trending-meta">
@@ -716,10 +710,10 @@ function createTrendingImage(news) {
   const imageUrl = news.image_url || news.image || news.urlToImage
   if (imageUrl && imageUrl.trim() !== "") {
     return `<img src="${imageUrl}" alt="${cleanText(news.title || "Новость")}" class="trending-image" 
-             style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px;"
-             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'image-placeholder\\' style=\\'height: 160px\\'><i class=\\'fas fa-newspaper\\'></i></div>';"/>`
+             style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px;"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'image-placeholder\\' style=\\'height: 120px\\'><i class=\\'fas fa-newspaper\\'></i></div>';"/>`
   }
-  return '<div class="image-placeholder" style="height: 160px;"><i class="fas fa-newspaper"></i></div>'
+  return '<div class="image-placeholder" style="height: 120px;"><i class="fas fa-newspaper"></i></div>'
 }
 
 function displayFeaturedNews() {
@@ -1040,17 +1034,6 @@ async function loadExchangeRates() {
       <div class="exchange-loading">Курсы недоступны</div>
     `
   }
-}
-
-updateSectionTitle("all")
-loadNews()
-
-if (isWeatherWidgetOnPage()) {
-  loadWeather()
-}
-
-if (isExchangeWidgetOnPage()) {
-  loadExchangeRates()
 }
 
 window.addEventListener("resize", () => {
