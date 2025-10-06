@@ -786,11 +786,11 @@ function generateTags(news) {
 function cleanText(text) {
   if (!text) return ""
   return text
-    .replace(/['"`);}>]/g, "")
-    .replace(/&quot;/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
     .replace(/\s+/g, " ")
     .trim()
 }
