@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsHub - Персональный агрегатор новостей</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="nav-brand">
+                    <i class="fas fa-newspaper brand-icon"></i>
+                    <span class="brand-text">NewsHub</span>
+                </div>
+                <div class="nav-menu" id="nav-menu">
+                    <button class="nav-menu-btn active" data-section="all">
+                        Все <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="nav-menu-btn" data-section="newsdata">
+                        NewsData <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="nav-menu-btn" data-section="gnews">
+                        GNews <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="nav-menu-btn" data-section="newsapi">
+                        NewsAPI <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-container-nav">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="nav-search" placeholder="Название статьи, тег, категория...">
+                </div>
+                <button class="burger-menu" id="burger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-container">
+            <section class="featured-section">
+                <div class="featured-badge">ЛУЧШЕЕ НА ЭТОЙ НЕДЕЛЕ</div>
+                <div class="featured-content">
+                    <div class="featured-left featured-full">
+                        <div class="featured-meta">
+                            <span class="featured-source" id="featured-source">Blockchain News</span>
+                            <span class="featured-time" id="featured-time">4 часа назад</span>
+                        </div>
+                        <h1 class="featured-title" id="featured-title">Загрузка главной новости...</h1>
+                        <div class="featured-tags" id="featured-tags">
+                            <span class="tag">#Технологии</span>
+                            <span class="tag">#Аналитика</span>
+                        </div>
+                        <button class="read-article-btn" id="featured-btn">
+                            Читать статью <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="content-layout">
+                <aside class="left-sidebar">
+                    <div class="widget weather-widget">
+                        <h3 class="widget-title">
+                            <i class="fas fa-cloud-sun"></i>
+                            Погода
+                        </h3>
+                        <div id="weather-info" class="weather-info">
+                            <div class="weather-location">Определение местоположения...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Популярные тематики</h3>
+                        <div class="popular-topics">
+                            <span class="topic-tag" data-category="business">Бизнес</span>
+                            <span class="topic-tag" data-category="technology">Технологии</span>
+                            <span class="topic-tag" data-category="science">Наука</span>
+                            <span class="topic-tag" data-category="sports">Спорт</span>
+                            <span class="topic-tag" data-category="entertainment">Культура</span>
+                            <span class="topic-tag" data-category="politics">Политика</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="news-main">
+                    <div class="section-header">
+                        <h2 class="section-title" id="dynamic-section-title">Все новости</h2>
+                        
+                    </div>
+                    <div id="news-container" class="news-grid"></div>
+                    <div class="scroll-indicator">
+                        <div class="scroll-arrow">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <span class="scroll-text">Прокрутите для просмотра больше новостей</span>
+                    </div>
+                </section>
+
+                <aside class="right-sidebar">
+                    <div class="widget best-widget">
+                        <div class="widget-header">
+                            <h3 class="widget-title">Трендовые Новости</h3>
+                        </div>
+                        <div id="best-news" class="best-list"></div>
+                    </div>
+
+                    <div class="widget exchange-widget">
+                        <h3 class="widget-title">
+                            <i class="fas fa-exchange-alt"></i>
+                            Курсы валют
+                        </h3>
+                        <div id="exchange-rates" class="exchange-rates">
+                            <div class="exchange-loading">Загрузка курсов...</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="trending-section">
+                <div class="section-header">
+                    <h2 class="section-title">Популярное сейчас</h2>
+                </div>
+                <div id="trending-container" class="trending-grid"></div>
+                <div class="trending-navigation">
+                    <button class="nav-arrow nav-prev"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-arrow nav-next"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
